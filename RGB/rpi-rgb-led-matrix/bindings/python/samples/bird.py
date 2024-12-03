@@ -16,6 +16,7 @@ def grass(self):
     for x in range (0, 32):
         for y in range (0, 4):
             self.matrix.SetPixel(x, y, 55, 148, 4)
+            #self.matrix.SetPixel(x, y, 56, 231, 135)
 
 def bird(self, y_dist):
     self.matrix.SetPixel(c - 2, c - y_dist + 1, 213, 195, 0) # body
@@ -27,6 +28,11 @@ def bird(self, y_dist):
     self.matrix.SetPixel(c - 3, c - y_dist, 246, 131, 11) # foot
     self.matrix.SetPixel(c - 4, c - y_dist + 2, 227, 253, 218) # eye
 
+def pipe(self, x_pos, length):
+    for x in range (x_pos, x_pos + 5):
+        for y in range (4, 4 + length):
+            self.matrix.SetPixel(x, y, 55, 195, 0)
+
 class GrayscaleBlock(SampleBase):
     def __init__(self, *args, **kwargs):
         super(GrayscaleBlock, self).__init__(*args, **kwargs)
@@ -36,6 +42,7 @@ class GrayscaleBlock(SampleBase):
         count = 0
         c = 255
         self.matrix.brightness = 75
+        x_pos = 0
         while (True):
             time.sleep(0.1)
             write = i2c_msg.write(address, [0xAA,0x00,0x00])
@@ -56,14 +63,19 @@ class GrayscaleBlock(SampleBase):
                 y_dist = 3
             if y_dist > 28:
                 y_dist = 28
-            y_dist
             self.matrix.Fill(63, 108 , 113)
+            
+            x_pos += 1
+
+            pipe(self, x_pos, 9)
+
+            if x_pos > 31:
+                x_pos = 0
             
 
             bird(self, y_dist)
             grass(self)
 
-            #self.usleep(20 * 1000)
 
 # Main function
 if __name__ == "__main__":
