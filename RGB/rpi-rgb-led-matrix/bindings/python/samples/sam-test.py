@@ -21,7 +21,7 @@ class GrayscaleBlock(SampleBase):
         c = 255
 
         while (True):
-            time.sleep(0.25)
+            time.sleep(0.1)
             write = i2c_msg.write(address, [0xAA,0x00,0x00])
             read = i2c_msg.read(address, 4)
             bus.i2c_rdwr(write, read)
@@ -32,12 +32,17 @@ class GrayscaleBlock(SampleBase):
             print("Pressure:", pressure)
 
             percent = ((pressure - 6)/19) * 100
-            print(percent)
-            self.matrix.brightness = percent
+            percent = percent - 50
+            if percent < 0:
+                percent = 0
+            percent = percent * 2
 
+            
+            self.matrix.brightness = percent
+            print("Percent:", self.matrix.brightness)
             self.matrix.Fill(c, 0, 0)
 
-            self.usleep(20 * 1000)
+            #self.usleep(20 * 1000)
 
 # Main function
 if __name__ == "__main__":
