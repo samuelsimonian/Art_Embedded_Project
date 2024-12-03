@@ -7,7 +7,7 @@ class GrayscaleBlock(SampleBase):
         super(GrayscaleBlock, self).__init__(*args, **kwargs)
 
     def run(self):
-        max_brightness = self.matrix.brightness
+        max_brightness = self.matrix.brightness # set to 100
         count = 0
         c = 255
 
