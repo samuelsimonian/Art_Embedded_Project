@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 from samplebase import SampleBase
 from smbus2 import SMBus, i2c_msg
+import time
+# I2C address of the sensor
+address = 0x18 
 
+MAXIMUM_PSI = 25
+MINIMUM_PSI = 0
+OUTPUT_MAX = 0xE66666
+OUTPUT_MIN = 0x19999A
+bus = SMBus(1) 
 
 class GrayscaleBlock(SampleBase):
     def __init__(self, *args, **kwargs):
@@ -13,52 +21,21 @@ class GrayscaleBlock(SampleBase):
         c = 255
 
         while (True):
-            with SMBus(1) as bus:
-                # Read 64 bytes from address 80
-                msg = i2c_msg.read(0x18, 4)
-                bus.i2c_rdwr(msg)
-            # Instead of a timer switching brightness, use pressure sensor
-            if self.matrix.brightness < 0.5:
-                self.matrix.brightness = max_brightness
-                # count changes when brightness = 0
-                count += 1
-            else:
-                self.matrix.brightness -= 0.5
+            time.sleep(0.25)
+            write = i2c_msg.write(address, [0xAA,0x00,0x00])
+            read = i2c_msg.read(address, 4)
+            bus.i2c_rdwr(write, read)
+            data = list(read)
+            reading = data[1] << 16 | data[2] << 8 | data[3]
+            pressure = (reading - OUTPUT_MIN) * (MAXIMUM_PSI - MINIMUM_PSI)
+            pressure = (pressure / (OUTPUT_MAX - OUTPUT_MIN)) + MINIMUM_PSI
+            print("Pressure:", pressure)
 
-            # Instead of count switching the colors, use a push button
-            if count % 4 == 0:
-                # Maybe don't use matrix.Fill, we should make it scroll or pulse or something based on the other buttons input
-                self.matrix.Fill(c, 0, 0)
-            elif count % 4 == 1:
-                self.matrix.Fill(0, c, 0)
-            elif count % 4 == 2:
-                self.matrix.Fill(0, 0, c)
-            elif count % 4 == 3:
-                self.matrix.Fill(c, c, c)
+            percent = ((pressure - 6)/19) * 100
+            print(percent)
+            self.matrix.brightness = percent
 
-            """
-            sub_blocks = 16
-            width = self.matrix.width
-            height = self.matrix.height
-            x_step = max(1, width / sub_blocks)
-            y_step = max(1, height / sub_blocks)
-            count = 0
-
-            while True:
-                for y in range(0, height):
-                    for x in range(0, width):
-                        c = sub_blocks * int(y / y_step) + int(x / x_step)
-                        if count % 4 == 0:
-                            self.matrix.SetPixel(x, y, c, c, c)
-                        elif count % 4 == 1:
-                            self.matrix.SetPixel(x, y, c, 0, 0)
-                        elif count % 4 == 2:
-                            self.matrix.SetPixel(x, y, 0, c, 0)
-                        elif count % 4 == 3:
-                            self.matrix.SetPixel(x, y, 0, 0, c)
-
-            count += 1
-            """
+            self.matrix.Fill(c, 0, 0)
 
             self.usleep(20 * 1000)
 
