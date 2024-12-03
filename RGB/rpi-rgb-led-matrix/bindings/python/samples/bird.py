@@ -16,7 +16,6 @@ def grass(self):
     for x in range (0, 32):
         for y in range (0, 4):
             self.matrix.SetPixel(x, y, 55, 148, 4)
-            #self.matrix.SetPixel(x, y, 56, 231, 135)
 
 def bird(self, y_dist):
     self.matrix.SetPixel(c - 2, c - y_dist + 1, 213, 195, 0) # body
@@ -33,6 +32,11 @@ def pipe(self, x_pos, length):
         for y in range (4, 4 + length):
             self.matrix.SetPixel(x, y, 55, 195, 0)
 
+def top_pipe(self, x_pos, length):
+    for x in range (x_pos, x_pos + 5):
+        for y in range (c - length, c):
+            self.matrix.SetPixel(x, y, 55, 195, 0)
+
 class GrayscaleBlock(SampleBase):
     def __init__(self, *args, **kwargs):
         super(GrayscaleBlock, self).__init__(*args, **kwargs)
@@ -43,6 +47,7 @@ class GrayscaleBlock(SampleBase):
         c = 255
         self.matrix.brightness = 75
         x_pos = 0
+        top_x_pos = 16
         while (True):
             time.sleep(0.1)
             write = i2c_msg.write(address, [0xAA,0x00,0x00])
@@ -63,14 +68,20 @@ class GrayscaleBlock(SampleBase):
                 y_dist = 3
             if y_dist > 28:
                 y_dist = 28
+
+            
             self.matrix.Fill(63, 108 , 113)
             
-            x_pos += 1
+            x_pos += 2
+            top_x_pos += 1
 
             pipe(self, x_pos, 9)
+            top_pipe(self, top_x_pos, 9)
 
             if x_pos > 31:
-                x_pos = 0
+                x_pos = -4
+            if top_x_pos > 31:
+                top_x_pos = -4
             
 
             bird(self, y_dist)
