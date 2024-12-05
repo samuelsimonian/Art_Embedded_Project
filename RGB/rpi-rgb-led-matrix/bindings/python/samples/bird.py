@@ -3,7 +3,7 @@ from samplebase import SampleBase
 from smbus2 import SMBus, i2c_msg
 import time
 from rgbmatrix import graphics
-
+import random
 
 # I2C address of the sensor
 address = 0x18 
@@ -30,7 +30,7 @@ def bird(self, y_dist):
     self.matrix.SetPixel(2, y_dist + 2, 246, 131, 11) # foot
     self.matrix.SetPixel(3, y_dist , 227, 253, 218) # eye
     bird_x = [1, 2, 3, 4]
-    bird_y = [y_dist, y_dist+1, y_dist+2, y_dist+3]
+    bird_y = [y_dist, y_dist+1, y_dist+2]
     return bird_x, bird_y
 
 def pipe(self, x_pos, length):
@@ -103,9 +103,17 @@ class GrayscaleBlock(SampleBase):
         max_brightness = self.matrix.brightness # set to 100
         count = 0
         c = 255
-        self.matrix.brightness = 75
+        self.matrix.brightness = 60
+
+        # variables
         x_pos = 35
         top_x_pos = 16
+        bottom_speed = 2
+        top_speed = 1
+        bottom_length = 9
+        top_length = 9
+        counter = 0
+
         while (True):
             time.sleep(0.1)
             write = i2c_msg.write(address, [0xAA,0x00,0x00])
@@ -130,16 +138,33 @@ class GrayscaleBlock(SampleBase):
             
             self.matrix.Fill(63, 108 , 113)
             
-            x_pos -= 2
-            top_x_pos -= 1
+            x_pos -= bottom_speed
+            top_x_pos -= top_speed
 
             if x_pos < -4:
+                #bottom_speed = random.randint(2,4)
+                plus = int(random.uniform(0.1,1.1))
+                if plus == 1:
+                    print('added to bottom')
+                bottom_speed += plus
+                bottom_length = random.randint(7,13)
                 x_pos = 35
+                counter += 1
+                print(counter)
             if top_x_pos < -4:
+                #top_speed = random.randint(2,4)
+                plus = int(random.uniform(0.1,1.1))
+                if plus == 1:
+                    print('added to top')
+                top_speed += plus
+                top_length = random.randint(7,13)
                 top_x_pos = 35
-
-            pipe_x, pipe_y = pipe(self, x_pos, 9)
-            top_pipe_x, top_pipe_y = top_pipe(self, top_x_pos, 9)
+                counter += 1
+                print(counter)
+                
+            pipe_x, pipe_y = pipe(self, x_pos, bottom_length)
+            
+            top_pipe_x, top_pipe_y = top_pipe(self, top_x_pos, top_length)
             bird_x, bird_y = bird(self, y_dist)
             grass(self)
             if check(self, bird_x, bird_y, pipe_x, pipe_y, top_pipe_x, top_pipe_y):
@@ -148,6 +173,13 @@ class GrayscaleBlock(SampleBase):
                 self.matrix.Fill(0,0,0)
                 time.sleep(0.05)
                 gg(self)
+                x_pos = 35
+                top_x_pos = 16
+                bottom_speed = 2
+                top_speed = 1
+                bottom_length = 9
+                top_length = 9
+                counter = 0 
 
 
 # Main function
