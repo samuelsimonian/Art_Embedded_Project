@@ -15,10 +15,21 @@ OUTPUT_MIN = 0x19999A
 bus = SMBus(1) 
 c = 0
 
-def grass(self):
+def grass(self, counter):
+    row = 0
     for x in range (0, 32):
         for y in range (28, 32):
             self.matrix.SetPixel(x, y, 55, 148, 4)
+    while counter >= 32:
+        counter -= 32
+        row += 1
+    for x in range (0, 32):
+        for y in range (28, 28 + row):
+            self.matrix.SetPixel(x, y, 255, 255, 0)
+    for x in range (0, (counter % 32)):
+        for y in range (28, 29 + row):
+            self.matrix.SetPixel(x, y, 255, 255, 0)
+
 
 def bird(self, y_dist):
     self.matrix.SetPixel(1, y_dist + 1, 213, 195, 0) # body
@@ -77,13 +88,15 @@ def check(self, b_x, b_y, p_x, p_y, t_p_x, t_p_y):
                             return True
     return False
 
-def gg(self):
+
+
+def gg(self, counter):
     offscreen_canvas = self.matrix.CreateFrameCanvas()
     font = graphics.Font()
     font.LoadFont("../../../fonts/7x13.bdf")
     textColor = graphics.Color(255, 0, 0)
     pos = offscreen_canvas.width
-    my_text = self.args.text
+    my_text = self.args.text + f" Score: {counter}"
     x = 1
     while (x > 0):
         offscreen_canvas.Clear()
@@ -137,7 +150,6 @@ class GrayscaleBlock(SampleBase):
 
             
             self.matrix.Fill(63, 108 , 113)
-            
             x_pos -= bottom_speed
             top_x_pos -= top_speed
 
@@ -166,13 +178,13 @@ class GrayscaleBlock(SampleBase):
             
             top_pipe_x, top_pipe_y = top_pipe(self, top_x_pos, top_length)
             bird_x, bird_y = bird(self, y_dist)
-            grass(self)
+            grass(self, counter)
             if check(self, bird_x, bird_y, pipe_x, pipe_y, top_pipe_x, top_pipe_y):
                 x_pos = 35
                 top_x_pos = 35
                 self.matrix.Fill(0,0,0)
                 time.sleep(0.05)
-                gg(self)
+                gg(self, counter)
                 x_pos = 35
                 top_x_pos = 16
                 bottom_speed = 2
