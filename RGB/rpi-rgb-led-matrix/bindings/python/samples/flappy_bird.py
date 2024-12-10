@@ -19,6 +19,7 @@ level = 0
 
 def grass(self, counter):
     global level
+    score = counter
     level = 0
     color = (255, 255, 0)
     for x in range (0, 32):
@@ -28,18 +29,29 @@ def grass(self, counter):
         counter -= 32
         level += 1
 
-        # TODO FIXME COLORS
     for x in range (0, 32):
-        for y in range (28, 28 + level):
-            if level == 0:
-                color = (255, 255, 0)
-            if level == 1:
-                color = (255, 140, 0)
-            if level == 2:
-                color = (255, 0, 0)
-            if level == 3:
-                color = (255, 0, 255)
-            self.matrix.SetPixel(x, y, color[0], color[1], color[2])
+        if level == 0:
+            color = (255, 255, 0) # set color of level 0
+        if level == 1:
+            color = (255, 140, 0) # set color of level 1
+            for y in range (28, 29):
+                self.matrix.SetPixel(x, y, 255, 255, 0) # fill in level 0
+        if level == 2:
+            color = (255, 0, 0) # set color of level 2
+            for y in range (28, 29):
+                self.matrix.SetPixel(x, y, 255, 255, 0) # fill in level 0
+            for y in range (29, 30):
+                self.matrix.SetPixel(x, y, 255, 140, 0) # fill in level 1
+        if level == 3:
+            color = (255, 0, 255)
+            for y in range (28, 29):
+                self.matrix.SetPixel(x, y, 255, 255, 0) # fill in level 0
+            for y in range (29, 30):
+                self.matrix.SetPixel(x, y, 255, 140, 0) # fill in level 1
+            for y in range (30, 31):
+                self.matrix.SetPixel(x, y, 255, 0, 0) # fill in level 2
+        if level == 4:
+            you_win(score)
                 
     for x in range (0, (counter % 32)):
         for y in range (28 + level, 29 + level):
@@ -90,23 +102,94 @@ def check(self, b_x, b_y, p_x, p_y):
                             return True
     return False
 
-
+def you_win(self, counter):
+    offscreen_canvas = self.matrix.CreateFrameCanvas()
+    font = graphics.Font()
+    font.LoadFont("../../../fonts/7x13.bdf")
+    font1 = graphics.Font()
+    font1.LoadFont("../../../fonts/7x13.bdf")
+    font2 = graphics.Font()
+    font2.LoadFont("../../../fonts/7x13.bdf")
+    textColor = graphics.Color(255, 255, 255)
+    deadColor = graphics.Color(0,255,0)
+    pos = offscreen_canvas.width
+    my_text = "YOU WIN! " + f" SCORE: {counter}"
+    x = 1
+    while (x > 0):
+        offscreen_canvas.Clear()
+        len = graphics.DrawText(offscreen_canvas, font, pos, 21, textColor, my_text)
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 9, deadColor, ".  .  .  .  .  .  .  .  .  .  .  .  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 5, deadColor, ".  .  .  .  .  .  .  .  .  .  .  .  ")
+        graphics.DrawText(offscreen_canvas, font2, pos - 28, 11, deadColor, ")  )  )  )  )  )  )  )  )  )  )  )  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 29, deadColor, ".  .  .  .  .  .  .  .  .  .  .  .  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 25, deadColor, ".  .  .  .  .  .  .  .  .  .  .  .  ")
+        graphics.DrawText(offscreen_canvas, font2, pos - 28, 31, deadColor, ")  )  )  )  )  )  )  )  )  )  )  )  ")
+        pos -= 1
+        time.sleep(0.05)
+        offscreen_canvas = self.matrix.SwapOnVSync(offscreen_canvas)
+        x = pos + len
+    menu(self)
 
 def gg(self, counter):
     offscreen_canvas = self.matrix.CreateFrameCanvas()
     font = graphics.Font()
     font.LoadFont("../../../fonts/7x13.bdf")
-    textColor = graphics.Color(255, 0, 0)
+    font1 = graphics.Font()
+    font1.LoadFont("../../../fonts/6x12.bdf")
+    font2 = graphics.Font()
+    font2.LoadFont("../../../fonts/6x13.bdf")
+    textColor = graphics.Color(255, 255, 255)
+    deadColor = graphics.Color(216,0,0)
     pos = offscreen_canvas.width
-    my_text = self.args.text + f" Score: {counter}"
+    my_text = "GAME OVER! " + f" SCORE: {counter}"
     x = 1
     while (x > 0):
         offscreen_canvas.Clear()
-        len = graphics.DrawText(offscreen_canvas, font, pos, 10, textColor, my_text)
+        len = graphics.DrawText(offscreen_canvas, font, pos, 21, textColor, my_text)
+
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 5, deadColor, "x  x  x  x  x  x  x  x  x  x  x  x  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 11, deadColor, "x  x  x  x  x  x  x  x  x  x  x  x  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 26, deadColor, "x  x  x  x  x  x  x  x  x  x  x  x  ")
+        graphics.DrawText(offscreen_canvas, font1, pos - 32, 32, deadColor, "x  x  x  x  x  x  x  x  x  x  x  x  ")
+
+        graphics.DrawText(offscreen_canvas, font2, pos - 26, 10, deadColor, "/  /  /  /  /  /  /  /  /  /  /  /  ")
+        graphics.DrawText(offscreen_canvas, font2, pos - 26, 31, deadColor, "/  /  /  /  /  /  /  /  /  /  /  /  ")
         pos -= 1
         time.sleep(0.05)
         offscreen_canvas = self.matrix.SwapOnVSync(offscreen_canvas)
         x = pos + len
+    menu(self)
+    
+def menu(self):
+    offscreen_canvas = self.matrix.CreateFrameCanvas()
+    font = graphics.Font()
+    font.LoadFont("../../../fonts/7x13.bdf")
+    textColor = graphics.Color(255, 255, 255)
+    pos = offscreen_canvas.width
+    x = 1
+    #my_text = "Press START to play again"
+    my_text = "START TO PLAY"
+    # TODO change to button press
+    while (x > 0):
+        offscreen_canvas.Clear()
+        len = graphics.DrawText(offscreen_canvas, font, pos, 20, textColor, my_text)
+        pos -= 1
+        time.sleep(0.05)
+        offscreen_canvas = self.matrix.SwapOnVSync(offscreen_canvas)
+        x = pos + len
+        drawbird(self, pos, 2)
+        drawbird(self, pos, 28)
+        
+
+def drawbird(self, x, y):
+    self.matrix.SetPixel(x + 1, y + 1, 213, 195, 0) # body
+    self.matrix.SetPixel(x + 1, y , 213, 195, 0) # body
+    self.matrix.SetPixel(x + 2, y + 1, 213, 195, 0) # body
+    self.matrix.SetPixel(x + 2, y , 213, 195, 0) # body
+    self.matrix.SetPixel(x + 3, y + 1, 255, 77, 68) # beak
+    self.matrix.SetPixel(x + 4, y + 1, 255, 77, 68) # beak
+    self.matrix.SetPixel(x + 2, y + 2, 246, 131, 11) # foot
+    self.matrix.SetPixel(x + 3, y , 227, 253, 218) # eye
 
 class GrayscaleBlock(SampleBase):
     def __init__(self, *args, **kwargs):
@@ -125,7 +208,7 @@ class GrayscaleBlock(SampleBase):
         mid_y = random.randint(9, 20)
         speed = 1
         gap = 9
-        counter = 28
+        counter = 0
 
         while (True):
             time.sleep(0.1)
@@ -162,7 +245,6 @@ class GrayscaleBlock(SampleBase):
                 speed += plus
                 x_pos = 35
                 counter += 1
-                #print(counter)
                 
             pipe_x, pipe_y = pipe(self, x_pos, mid_y, level)
             bird_x, bird_y = bird(self, y_dist)
